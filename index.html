@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BQM Graph Archive</title>
+
+<style>
+body { font-family: Arial, sans-serif; }
+h1 { margin-bottom: 0.3em; }
+.year { margin-bottom: 1.5em; }
+.months a {
+  display: inline-block;
+  margin: 0.2em 0.6em 0.2em 0;
+}
+</style>
+</head>
+<body>
+
+<h1>Broadband Quality Monitor – Graph Archive</h1>
+
+<div id="index"></div>
+
+<script>
+const START = new Date("2025-09-01");
+const END   = new Date("2026-01-31");
+
+function pad(n) { return String(n).padStart(2, "0"); }
+
+const index = {};
+let d = new Date(START);
+
+while (d <= END) {
+  const y = d.getFullYear();
+  const m = pad(d.getMonth() + 1);
+  index[y] ??= new Set();
+  index[y].add(m);
+  d.setMonth(d.getMonth() + 1);
+}
+
+const container = document.getElementById("index");
+
+Object.keys(index).sort().forEach(year => {
+  const div = document.createElement("div");
+  div.className = "year";
+
+  const h2 = document.createElement("h2");
+  h2.textContent = year;
+
+  const months = document.createElement("div");
+  months.className = "months";
+
+  [...index[year]].sort().forEach(month => {
+    const a = document.createElement("a");
+    a.href = `month.html?ym=${year}-${month}`;
+    a.textContent = `${year}-${month}`;
+    months.appendChild(a);
+  });
+
+  div.appendChild(h2);
+  div.appendChild(months);
+  container.appendChild(div);
+});
+</script>
+
+</body>
+</html>

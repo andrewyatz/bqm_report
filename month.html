@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BQM Monthly View</title>
+
+<style>
+body { font-family: Arial, sans-serif; }
+a { text-decoration: none; }
+
+h1 { margin-bottom: 0.4em; }
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1em;
+}
+
+.thumb {
+  border: 1px solid #ccc;
+  padding: 0.4em;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.thumb img {
+  width: 100%;
+  height: auto;
+}
+
+.date {
+  text-align: center;
+  font-size: 0.9em;
+  margin-top: 0.3em;
+}
+
+/* Lightbox */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+#lightbox img {
+  max-width: 95vw;
+  max-height: 95vh;
+}
+</style>
+</head>
+<body>
+
+<div id="nav" style="margin-bottom: 1em;"></div>
+<h1 id="title"></h1>
+
+<div class="gallery" id="gallery"></div>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg">
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const ym = params.get("ym"); // YYYY-MM
+if (!ym) location.href = "index.html";
+
+const [YEAR, MONTH] = ym.split("-").map(Number);
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function monthLink(y, m) {
+  return `month.html?ym=${y}-${pad(m)}`;
+}
+
+function prevMonth(y, m) {
+  return m === 1 ? [y - 1, 12] : [y, m - 1];
+}
+
+function nextMonth(y, m) {
+  return m === 12 ? [y + 1, 1] : [y, m + 1];
+}
+
+const [py, pm] = prevMonth(YEAR, MONTH);
+const [ny, nm] = nextMonth(YEAR, MONTH);
+
+const navHtml = `
+  <a href="index.html">← Index</a> |
+  <a href="${monthLink(py, pm)}">← ${py}-${pad(pm)}</a> |
+  <a href="${monthLink(ny, nm)}">${ny}-${pad(nm)} →</a>
+`;
+
+const navTop = document.getElementById("nav");
+if (navTop) navTop.innerHTML = navHtml;
+
+const navBottom = document.getElementById("nav-bottom");
+if (navBottom) navBottom.innerHTML = navHtml;
+
+const gallery = document.getElementById("gallery");
+const title = document.getElementById("title");
+
+title.textContent = `BQM Graphs – ${ym}`;
+
+function pad(n) { return String(n).padStart(2, "0"); }
+function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+const images = [];
+const days = daysInMonth(YEAR, MONTH);
+
+for (let d = 1; d <= days; d++) {
+  const date = `${YEAR}-${pad(MONTH)}-${pad(d)}`;
+  const file = `bqm_images/bqm_${date}.png`;
+
+  const div = document.createElement("div");
+  div.className = "thumb";
+
+  const img = document.createElement("img");
+  img.src = file;
+  img.loading = "lazy";
+  img.onerror = () => div.remove();
+
+  img.onclick = () => openLightbox(file);
+
+  const label = document.createElement("div");
+  label.className = "date";
+  label.textContent = date;
+
+  div.appendChild(img);
+  div.appendChild(label);
+  gallery.appendChild(div);
+
+  images.push(file);
+}
+
+/* Lightbox logic */
+let current = 0;
+const lb = document.getElementById("lightbox");
+const lbImg = document.getElementById("lightboxImg");
+
+function openLightbox(src) {
+  current = images.indexOf(src);
+  lbImg.src = src;
+  lb.style.display = "flex";
+}
+
+function closeLightbox() {
+  lb.style.display = "none";
+}
+
+document.addEventListener("keydown", e => {
+  if (lb.style.display !== "flex") return;
+
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowRight" && current > 0)
+    lbImg.src = images[--current];
+  if (e.key === "ArrowLeft" && current < images.length - 1)
+    lbImg.src = images[++current];
+});
+</script>
+<div id="nav-bottom" style="margin-top: 2em;"></div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Broadband Quality Monitor – CSV Downloads</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    section {
+      margin-bottom: 2em;
+    }
+    button {
+      margin-bottom: 0.5em;
+    }
+    ul {
+      list-style: none;
+      padding-left: 1em;
+    }
+    li {
+      margin: 0.2em 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Broadband Quality Monitor CSV Downloads</h1>
+
+<div id="content"></div>
+
+<script>
+  const START_DATE = new Date(Date.UTC(2026, 0, 31)); // Jan = 0
+  const END_DATE   = new Date(Date.UTC(2025, 8, 1));  // Sep = 8
+  const BASE_URL   = "https://www.thinkbroadband.com/my-profile/broadband-quality-monitor/download-csv/184520/";
+
+  const content = document.getElementById("content");
+
+  function formatDateUTC(date) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  function monthLabelUTC(date) {
+    return date.toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC"
+    });
+  }
+
+  const months = {};
+  let d = new Date(START_DATE);
+
+  while (d >= END_DATE) {
+    const year = d.getUTCFullYear();
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const key = `${year}-${month}`;
+
+    if (!months[key]) {
+      const section = document.createElement("section");
+      section.id = `month-${key}`;
+
+      const h2 = document.createElement("h2");
+      h2.textContent = monthLabelUTC(d);
+
+      const button = document.createElement("button");
+      button.textContent = `Download all for ${monthLabelUTC(d)}`;
+      button.onclick = () => downloadMonth(section.id);
+
+      const ul = document.createElement("ul");
+
+      section.appendChild(h2);
+      section.appendChild(button);
+      section.appendChild(ul);
+
+      months[key] = ul;
+      content.appendChild(section);
+    }
+
+    const dateStr = formatDateUTC(d);
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+
+    a.href = BASE_URL + dateStr;
+    a.textContent = dateStr;
+
+    li.appendChild(a);
+    months[key].appendChild(li);
+
+    // ✅ UTC-safe decrement
+    d.setUTCDate(d.getUTCDate() - 1);
+  }
+
+  function downloadMonth(monthId) {
+    const links = document.querySelectorAll(`#${monthId} a`);
+    let delay = 0;
+
+    links.forEach(link => {
+      setTimeout(() => {
+        const a = document.createElement("a");
+        a.href = link.href;
+        a.download = "";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, delay);
+      delay += 500;
+    });
+  }
+</script>
+
+
+</body>
+</html>
