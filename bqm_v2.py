@@ -112,6 +112,9 @@ def plot_day(df, date):
     ax1.set_xlabel("Time")
     ax1.set_ylabel("Latency (ms)")
 
+    # Max-out at 170ms
+    ax1.set_ylim(0, 170)
+
     ax1.set_xlim(
         df["Timestamp"].dt.normalize().iloc[0],
         df["Timestamp"].dt.normalize().iloc[0] + pd.Timedelta(days=1)
