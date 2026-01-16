@@ -30,7 +30,8 @@ def extract_date(filename):
 
 
 def process_file(path, date):
-    df = pd.read_csv(path)
+    compression = "gzip" if path.endswith(".gz") else None
+    df = pd.read_csv(path, compression=compression)
 
     df["Timestamp"] = pd.to_datetime(df["Timestamp"])
 
